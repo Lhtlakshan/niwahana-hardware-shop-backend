@@ -1,0 +1,14 @@
+Spring:
+  Datasource:
+    url: "jdbc:mysql://localhost:3306/niwahana_hardware"
+    username: root
+    password: Thilina
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+app:
+  client:
+    url: "http://localhost:4200/login"
