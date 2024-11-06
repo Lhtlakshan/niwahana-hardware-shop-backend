@@ -4,8 +4,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.icet.crm.dto.SignupDto;
 import org.icet.crm.dto.UserDto;
+import org.icet.crm.entity.Order;
 import org.icet.crm.entity.User;
+import org.icet.crm.enums.OrderStatus;
 import org.icet.crm.enums.UserRole;
+import org.icet.crm.repository.OrderRepository;
 import org.icet.crm.repository.UserRepository;
 import org.icet.crm.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
 
+    private final OrderRepository orderRepository;
+
     @Override
     public UserDto createUser(SignupDto signupDto) {
         User user = new User();
@@ -25,7 +30,15 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(signupDto.getEmail());
         user.setUserRole(UserRole.CUSTOMER);
         user.setPassword(new BCryptPasswordEncoder().encode(signupDto.getPassword()));
-        userRepository.save(user);
+        User createUser = userRepository.save(user);
+
+        Order order= new Order();
+        order.setAmount(0L);
+        order.setTotalAmount(0L);
+        order.setDiscount(0L);
+        order.setUser(createUser);
+        order.setOrderStatus(OrderStatus.PENDING);
+        orderRepository.save(order);
 
         return user.mapUserToUserDto();
     }

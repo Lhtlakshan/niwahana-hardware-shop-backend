@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@CrossOrigin
 public class AdminProductController {
 
     private final AdminProductService adminProductService;
@@ -29,9 +30,18 @@ public class AdminProductController {
         return ResponseEntity.ok(productDtos);
     }
 
-    @GetMapping("/search/{name}")
+    @GetMapping("/products/search/{name}")
     public ResponseEntity<List<ProductDto>> getAllProductsByName(@PathVariable String name){
         List<ProductDto> productDtos = adminProductService.getAllProductByName(name);
         return ResponseEntity.ok(productDtos);
+    }
+
+    @DeleteMapping("/product/delete/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
+        boolean deleted = adminProductService.deleteProduct(id);
+        if(deleted){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

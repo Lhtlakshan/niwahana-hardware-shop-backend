@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +55,15 @@ public class AdminProductServiceImpl implements AdminProductService {
         });
 
         return productDtos;
+    }
+
+    @Override
+    public boolean deleteProduct(Long id){
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (optionalProduct.isPresent()){
+            productRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }

@@ -8,4 +8,5 @@ public interface AdminProductService {
      ProductDto addProduct(ProductDto productDto);
      List<ProductDto> getAllProducts();
      List<ProductDto> getAllProductByName(String name);
+     boolean deleteProduct(Long id);
 }
