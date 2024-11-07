@@ -9,6 +9,10 @@ Spring:
       ddl-auto: update
     show-sql: true
 
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
 app:
   client:
     url: "http://localhost:4200/login"

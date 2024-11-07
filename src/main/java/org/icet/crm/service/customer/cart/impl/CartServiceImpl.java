@@ -4,21 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.icet.crm.dto.AddProductInCartDto;
 import org.icet.crm.dto.CartItemDto;
 import org.icet.crm.dto.OrderDto;
-import org.icet.crm.entity.CartItems;
-import org.icet.crm.entity.Order;
-import org.icet.crm.entity.Product;
-import org.icet.crm.entity.User;
+import org.icet.crm.entity.*;
 import org.icet.crm.enums.OrderStatus;
-import org.icet.crm.repository.CartItemsRepository;
-import org.icet.crm.repository.OrderRepository;
-import org.icet.crm.repository.ProductRepository;
-import org.icet.crm.repository.UserRepository;
+import org.icet.crm.exceptions.ValidationException;
+import org.icet.crm.repository.*;
 import org.icet.crm.service.customer.cart.CartService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,6 +31,10 @@ public class CartServiceImpl implements CartService {
     private final CartItemsRepository cartItemsRepository;
 
     private final ProductRepository productRepository;
+
+    private final CouponRepository couponRepository;
+
+    private final ModelMapper modelMapper;
 
     @Override
     public ResponseEntity<?> addProductToCart(AddProductInCartDto addProductInCartDto) {
@@ -81,6 +82,36 @@ public class CartServiceImpl implements CartService {
         orderDto.setTotalAmount(activeOrder.getTotalAmount());
         orderDto.setCartItems(cartItemDtoList);
 
+        if(activeOrder.getCoupon() != null){
+            orderDto.setCouponName(activeOrder.getCoupon().getName());
+        }
+
         return orderDto;
+    }
+
+    public OrderDto applyCoupon(Long userId,String code){
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.PENDING);
+        Coupon coupon = couponRepository.findByCode(code).orElseThrow(()-> new ValidationException("Coupon not found"));
+
+        if(couponIsExpiration(coupon)){
+            throw new ValidationException("Coupon expired...");
+        }
+
+        double discountAmount = ((coupon.getDiscount()/100.0)*activeOrder.getTotalAmount());
+        double netAmount = activeOrder.getTotalAmount()-discountAmount;
+
+        activeOrder.setAmount((long)netAmount);
+        activeOrder.setDiscount((long)discountAmount);
+        activeOrder.setCoupon(coupon);
+
+        orderRepository.save(activeOrder);
+        return modelMapper.map(activeOrder,OrderDto.class);
+    }
+
+    private boolean couponIsExpiration(Coupon coupon){
+        Date currentDate = new Date();
+        Date expirationDate = coupon.getExpirationDate();
+
+        return expirationDate != null && currentDate.after(expirationDate);
     }
 }
