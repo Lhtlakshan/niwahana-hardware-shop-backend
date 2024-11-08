@@ -6,6 +6,7 @@ import org.icet.crm.dto.PlaceOrderDto;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface CartService {
     ResponseEntity<?> addProductToCart(AddProductInCartDto addProductCartDto);
@@ -14,4 +15,5 @@ public interface CartService {
     OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto);
     OrderDto placeOrder(PlaceOrderDto placeOrderDto);
     List<OrderDto> getCustomerPlacedOrders(Long userId);
+    OrderDto searchOrderByTrackingId(UUID trackingId);
 }

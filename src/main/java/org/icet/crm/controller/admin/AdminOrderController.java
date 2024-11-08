@@ -1,6 +1,7 @@
 package org.icet.crm.controller.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.icet.crm.dto.AnalyticsResponseDto;
 import org.icet.crm.dto.OrderDto;
 import org.icet.crm.service.admin.adminOrder.AdminOrderService;
 import org.springframework.http.HttpStatus;
@@ -30,4 +31,10 @@ public class AdminOrderController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(orderDto);
     }
+
+    @GetMapping("/order/analytics")
+    public ResponseEntity<AnalyticsResponseDto> getAnalytics(){
+        return ResponseEntity.ok(adminOrderService.calculateAnalytics());
+    }
+
 }

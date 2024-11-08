@@ -184,4 +184,13 @@ public class CartServiceImpl implements CartService {
 
         return orderDtoList;
     }
+
+    public OrderDto searchOrderByTrackingId(UUID trackingId){
+        Optional<Order> optionalOrder = orderRepository.findByTrackingId(trackingId);
+        if(optionalOrder.isPresent()){
+            return modelMapper.map(optionalOrder.get(),OrderDto.class);
+        }else{
+            return null;
+        }
+    }
 }
