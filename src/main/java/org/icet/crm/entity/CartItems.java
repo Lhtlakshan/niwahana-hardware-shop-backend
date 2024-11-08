@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.icet.crm.dto.CartItemDto;
 
 @Data
 @Entity
+@ToString
 public class CartItems {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

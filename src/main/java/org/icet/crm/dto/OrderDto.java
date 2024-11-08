@@ -1,6 +1,7 @@
 package org.icet.crm.dto;
 
 import lombok.Data;
+import lombok.ToString;
 import org.icet.crm.enums.OrderStatus;
 
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
+@ToString
 public class OrderDto {
     private Long id;
     private String orderDescription;

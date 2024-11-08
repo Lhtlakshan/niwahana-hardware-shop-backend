@@ -2,10 +2,16 @@ package org.icet.crm.service.customer.cart;
 
 import org.icet.crm.dto.AddProductInCartDto;
 import org.icet.crm.dto.OrderDto;
+import org.icet.crm.dto.PlaceOrderDto;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface CartService {
     ResponseEntity<?> addProductToCart(AddProductInCartDto addProductCartDto);
     OrderDto getCartByUserId(Long userId);
-    public OrderDto applyCoupon(Long userId,String code);
+    OrderDto applyCoupon(Long userId,String code);
+    OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto);
+    OrderDto placeOrder(PlaceOrderDto placeOrderDto);
+    List<OrderDto> getCustomerPlacedOrders(Long userId);
 }

@@ -4,20 +4,18 @@ import lombok.RequiredArgsConstructor;
 import org.icet.crm.dto.AddProductInCartDto;
 import org.icet.crm.dto.CartItemDto;
 import org.icet.crm.dto.OrderDto;
+import org.icet.crm.dto.PlaceOrderDto;
 import org.icet.crm.entity.*;
 import org.icet.crm.enums.OrderStatus;
 import org.icet.crm.exceptions.ValidationException;
 import org.icet.crm.repository.*;
 import org.icet.crm.service.customer.cart.CartService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -113,5 +111,77 @@ public class CartServiceImpl implements CartService {
         Date expirationDate = coupon.getExpirationDate();
 
         return expirationDate != null && currentDate.after(expirationDate);
+    }
+
+    public OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto){
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.PENDING);
+        Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getProductId());
+
+        Optional<CartItems> optionalCartItems = cartItemsRepository.findByProductIdAndOrderIdAndUserId(
+                addProductInCartDto.getProductId(),
+                activeOrder.getId(),
+                addProductInCartDto.getUserId()
+        );
+
+        if(optionalProduct.isPresent() && optionalCartItems.isPresent()){
+            CartItems cartItems = optionalCartItems.get();
+            Product product = optionalProduct.get();
+
+            activeOrder.setAmount(activeOrder.getAmount()+product.getPrice());
+            activeOrder.setTotalAmount(activeOrder.getTotalAmount() + +product.getPrice());
+
+            cartItems.setQuantity(cartItems.getQuantity() + 1);
+            System.out.println(cartItems.getQuantity() );
+
+            if(activeOrder.getCoupon() !=null){
+                double discountAmount = ((activeOrder.getCoupon().getDiscount()/100.0)*activeOrder.getTotalAmount());
+                double netAmount = activeOrder.getTotalAmount()-discountAmount;
+
+                activeOrder.setAmount((long)netAmount);
+                activeOrder.setDiscount((long)discountAmount);
+
+                cartItemsRepository.save(cartItems);
+                orderRepository.save(activeOrder);
+
+                return modelMapper.map(activeOrder,OrderDto.class);
+            }
+        }
+        return null;
+    }
+
+    public OrderDto placeOrder(PlaceOrderDto placeOrderDto){
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.PENDING);
+        Optional<User> optionalUser = userRepository.findById(placeOrderDto.getUserId());
+        if(optionalUser.isPresent()){
+            activeOrder.setOrderDescription(placeOrderDto.getOrderDescription());
+            activeOrder.setAddress(placeOrderDto.getAddress());
+            activeOrder.setDate(new Date());
+            activeOrder.setOrderStatus(OrderStatus.PLACED);
+            activeOrder.setTrackingId(UUID.randomUUID());
+
+            orderRepository.save(activeOrder);
+
+            Order order= new Order();
+            order.setAmount(0L);
+            order.setTotalAmount(0L);
+            order.setDiscount(0L);
+            order.setUser(optionalUser.get());
+            order.setOrderStatus(OrderStatus.PENDING);
+            orderRepository.save(order);
+
+            return modelMapper.map(activeOrder,OrderDto.class);
+        }
+        return null;
+    }
+
+    public List<OrderDto> getCustomerPlacedOrders(Long userId){
+        List<OrderStatus> orderStatusList = List.of(OrderStatus.PLACED,OrderStatus.DELIVERED,OrderStatus.SHIPPED);
+        List<Order> orderList = orderRepository.findAllByUserIdAndOrderStatusIn(userId,orderStatusList);
+        List<OrderDto> orderDtoList = new ArrayList<>();
+        orderList.forEach(order -> {
+            orderDtoList.add(modelMapper.map(order, OrderDto.class));
+        });
+
+        return orderDtoList;
     }
 }

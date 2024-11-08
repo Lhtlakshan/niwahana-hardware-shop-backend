@@ -3,6 +3,7 @@ package org.icet.crm.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.icet.crm.enums.OrderStatus;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "orders")
+@ToString
 public class Order {
 
     @Id

@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:4200")
 public class AdminProductController {
 
     private final AdminProductService adminProductService;
@@ -43,5 +43,26 @@ public class AdminProductController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<ProductDto> getProductById(@PathVariable Long productId){
+        ProductDto productDto = adminProductService.geyProductById(productId);
+        if(productDto != null){
+            return ResponseEntity.ok(productDto);
+        }else{
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @PutMapping("product/update-product/{productId}")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long productId, @ModelAttribute ProductDto productDto){
+        ProductDto updatedProductDto = adminProductService.updateProduct(productId , productDto);
+        if(updatedProductDto != null){
+            return ResponseEntity.ok(updatedProductDto);
+        }else{
+            return ResponseEntity.notFound().build();
+        }
     }
 }

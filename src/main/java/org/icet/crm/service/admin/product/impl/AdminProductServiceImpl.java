@@ -1,7 +1,6 @@
 package org.icet.crm.service.admin.product.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.icet.crm.dto.CategoryDto;
 import org.icet.crm.dto.ProductDto;
 import org.icet.crm.entity.Category;
 import org.icet.crm.entity.Product;
@@ -66,4 +65,32 @@ public class AdminProductServiceImpl implements AdminProductService {
         }
         return false;
     }
+
+    public ProductDto geyProductById(Long productId){
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if(optionalProduct.isPresent()) {
+            return modelMapper.map(optionalProduct.get(), ProductDto.class);
+        }else{
+            return null;
+        }
+    }
+
+    public ProductDto updateProduct(Long productId , ProductDto productDto){
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
+        if(optionalProduct != null && optionalCategory!=null){
+            Product product = optionalProduct.get();
+
+            product.setName(productDto.getName());
+            product.setDescription(productDto.getDescription());
+            product.setPrice(productDto.getPrice());
+            product.setCategory(optionalCategory.get());
+
+            Product updatedProduct = productRepository.save(optionalProduct.get());
+            return modelMapper.map(updatedProduct, ProductDto.class);
+        }else {
+            return null;
+        }
+    }
+
 }
